@@ -13,9 +13,8 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 
 
-# ============================================================
-# CONFIG
-# ============================================================
+# Configuration 
+
 ROOT = Path("/Users/ahnafhassan/Desktop/python_projects/Privacy Course/Geolife Trajectories 1.3/Data")
 GRID_SIZE = 0.05
 MIN_POINTS_PER_TRIP = 10
@@ -26,7 +25,7 @@ RANDOM_STATE = 42
 DOWNSAMPLE_EVERY_K_POINTS = 5      # 1 = no downsampling
 COLLAPSE_SAME_STATE_RUNS = False   # True = privatize one point per repeated grid-cell run
 
-# Xiao-style release params
+# Xiao release params
 EPSILON = 8
 DELTA_LOCSET = 0.05
 INIT_PRIOR_TOPK = 20
@@ -39,16 +38,10 @@ MAX_CANDIDATES_PER_STEP = 15
 N_ESTIMATORS = 200
 
 
-# ============================================================
-# GLOBAL CACHES
-# ============================================================
 CENTER_CACHE: Dict[Tuple[Tuple[int, int], float], Tuple[float, float]] = {}
 PIM_CACHE: Dict[Tuple[Tuple[int, int], ...], Dict] = {}
 
 
-# ============================================================
-# BASIC HELPERS
-# ============================================================
 def haversine_m(lat1, lon1, lat2, lon2):
     R = 6371000.0
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
@@ -151,9 +144,8 @@ def preprocess_trip_for_privatization(df: pd.DataFrame, grid_size: float) -> pd.
     return out
 
 
-# ============================================================
-# MARKOV MODEL
-# ============================================================
+# Markov Model Setup
+
 def build_markov_model(trips: List[Dict], grid_size: float):
     transition_counts = Counter()
     outgoing_counts = Counter()
@@ -263,9 +255,7 @@ def nearest_surrogate(true_state: Tuple[int, int], locset: List[Tuple[int, int]]
     return best
 
 
-# ============================================================
-# CONVEX / POLYGON UTILS
-# ============================================================
+# Convex / Polygon Utils
 def unique_rows(points: np.ndarray) -> np.ndarray:
     if len(points) == 0:
         return points
@@ -495,9 +485,8 @@ def get_pim_aux(
     return aux
 
 
-# ============================================================
-# PIM RELEASE + EMISSION
-# ============================================================
+# PIM release + Emission
+
 def pim_release(
     surrogate_state: Tuple[int, int],
     locset: List[Tuple[int, int]],
@@ -612,7 +601,7 @@ def update_posterior(
 
     log_post = log_prior + log_emit
 
-    # stable normalize with log-sum-exp trick
+    # stable normalize with log-sum-exp 
     m = float(np.max(log_post))
     post_vals = np.exp(log_post - m)
     total = float(post_vals.sum())
@@ -633,9 +622,9 @@ def update_posterior(
     return out
 
 
-# ============================================================
-# FULL XIAO-STYLE PRIVATIZATION
-# ============================================================
+
+# Full Xia Inspired Privatization
+
 def privatize_trip_pim_xiao_style(
     df: pd.DataFrame,
     model: Dict,
@@ -750,9 +739,8 @@ def privatize_all_trips_pim(
     return noisy_trips, pd.DataFrame(meta_rows)
 
 
-# ============================================================
-# FEATURE EXTRACTION + UNSUPERVISED
-# ============================================================
+# Feature Extraction + Isolation Forest
+
 def extract_trip_features(df: pd.DataFrame, grid_size: float) -> Dict[str, float]:
     df = df.sort_values("timestamp").reset_index(drop=True)
 
@@ -880,9 +868,8 @@ def fit_iforest_scores(feature_df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-# ============================================================
-# COMPARISON
-# ============================================================
+# Evaluation and Comparison
+
 def overlap_at_k(df: pd.DataFrame, col1: str, col2: str, k: int) -> float:
     top1 = set(df.nlargest(k, col1)["trip_key"])
     top2 = set(df.nlargest(k, col2)["trip_key"])
@@ -982,9 +969,7 @@ def precision_recall_percentile(merged: pd.DataFrame, percent: float = 5.0):
         "recall": recall,
         "f1": f1,
     }
-# ============================================================
-# MAIN
-# ============================================================
+
 def main():
     print("Loading GeoLife trips...")
     trips = load_geolife_trips(ROOT, max_users=MAX_USERS)
@@ -1037,9 +1022,9 @@ def main():
     print("\nSaved:")
     print("  geolife_raw_vs_xiao_pim_fast.csv")
     print("  geolife_eval_summary.csv")
-  #  print("  geolife_raw_features.csv")
-   # print("  geolife_xiao_pim_fast_features.csv")
-    #print("  geolife_xiao_pim_fast_meta.csv")
+    print("  geolife_raw_features.csv")
+    print("  geolife_xiao_pim_fast_features.csv")
+    print("  geolife_xiao_pim_fast_meta.csv")
 
 
 if __name__ == "__main__":
