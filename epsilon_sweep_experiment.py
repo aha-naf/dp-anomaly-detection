@@ -64,13 +64,13 @@ def precision_recall_raw_threshold(merged, percent=5.0):
         merged = merged.copy()
         merged["trip_key"] = merged["user_id"].astype(str) + "_" + merged["traj_id"].astype(str)
 
-    # ✅ threshold ONLY from raw
+    # threshold from raw
     raw_thresh = merged["unsup_score_raw"].quantile(1 - percent / 100.0)
 
     # raw ground truth
     raw_top = set(merged[merged["unsup_score_raw"] >= raw_thresh]["trip_key"])
 
-    # noisy predictions (NOT forced to same size anymore)
+    # noisy predictions 
     noisy_top = set(merged[merged["unsup_score_noisy"] >= raw_thresh]["trip_key"])
 
     tp = len(raw_top & noisy_top)
@@ -128,7 +128,6 @@ def run_one_epsilon(epsilon: float) -> Dict[str, float]:
     print(f"\n=== Running epsilon = {epsilon} ===")
     start = time.time()
 
-    # Reset caches so each run is clean and comparable.
     ux.CENTER_CACHE.clear()
     ux.PIM_CACHE.clear()
 
