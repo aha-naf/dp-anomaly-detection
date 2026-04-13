@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Import the user's pipeline module
-import unsupervised_xiao_fast as ux
+import 2b_IF_PIM as ux
 
 
 EPSILON_VALUES = [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
